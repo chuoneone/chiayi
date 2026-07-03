@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>特教自製數位學習資源導航首頁</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      
+      /* 科目色彩系統 */
+      --math-color: #6366f1; /* 藍紫 */
+      --math-bg: #e0e7ff;
+      --chinese-color: #f97316; /* 橘 */
+      --chinese-bg: #ffedd5;
+      --english-color: #0ea5e9; /* 天藍 */
+      --english-bg: #e0f2fe;
+      
+      --accent: #10b981; /* 綠 */
+      --accent-bg: #d1fae5;
+      
+      --font-scale: 1;
+    }
+
+    /* 暗黑模式變數 */
+    body.dark-mode {
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.8);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      
+      --math-bg: #312e81;
+      --chinese-bg: #431407;
+      --english-bg: #0c4a6e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: calc(1rem * var(--font-scale));
+      padding-bottom: 60px;
+    }
+
+    /* 背景裝飾漸變球（提升 premium 美感） */
+    .bg-glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+      top: -100px;
+      left: -100px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .bg-glow-right {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0) 70%);
+      bottom: -150px;
+      right: -150px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* 頂部 Header */
+    header {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background-color: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+
+    body.dark-mode header {
+      background-color: rgba(15, 23, 42, 0.8);
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 2.2rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .logo-title h1 {
+      font-size: 1.4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #4f46e5, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-title p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* 輔助工具列 */
+    .accessibility-tools {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .tool-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tool-btn:hover {
+      background-color: var(--border);
+    }
+
+    /* 主要內容區 */
+    main {
+      flex: 1;
+      max-width: 1000px;
+      width: 100%;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+
+    /* 搜尋與篩選列 */
+    .control-panel {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+      backdrop-filter: blur(16px);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 260px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--math-color);
+      box-shadow: 0 0 0 3px var(--math-bg);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* 科目過濾標籤 */
+    .filter-tags {
+      display: flex;
+      gap: 10px;
+    }
+
+    .filter-tag {
+      padding: 8px 16px;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-tag.active[data-subject="all"] {
+      background-color: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .filter-tag.active[data-subject="math"] {
+      background-color: var(--math-color);
+      color: white;
+      border-color: var(--math-color);
+    }
+
+    .filter-tag.active[data-subject="chinese"] {
+      background-color: var(--chinese-color);
+      color: white;
+      border-color: var(--chinese-color);
+    }
+
+    .filter-tag.active[data-subject="english"] {
+      background-color: var(--english-color);
+      color: white;
+      border-color: var(--english-color);
+    }
+
+    /* ==========================================
+       最愛看板 (Favorites Panel)
+       ========================================== */
+    .favorites-section {
+      margin-bottom: 32px;
+      display: none;
+    }
+
+    .favorites-section.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 卡片格線 */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* 精美玻璃卡片 */
+    .resource-card {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 根據學科顯示卡片頂部裝飾條 */
+    .resource-card.subject-math { border-top: 5px solid var(--math-color); }
+    .resource-card.subject-chinese { border-top: 5px solid var(--chinese-color); }
+    .resource-card.subject-english { border-top: 5px solid var(--english-color); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    /* 科目徽章 */
+    .subject-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .subject-math .subject-badge { background-color: var(--math-bg); color: var(--math-color); }
+    .subject-chinese .subject-badge { background-color: var(--chinese-bg); color: var(--chinese-color); }
+    .subject-english .subject-badge { background-color: var(--english-bg); color: var(--english-color); }
+
+    /* 星星收藏按鈕 */
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: transform 0.1s;
+    }
+
+    .star-btn.starred {
+      color: #eab308; /* 金黃星 */
+    }
+
+    .star-btn:active {
+      transform: scale(1.2);
+    }
+
+    /* 卡片內容 */
+    .card-body {
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* 點選按鈕 */
+    .launch-btn {
+      width: 100%;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .subject-math .launch-btn { background-color: var(--math-color); }
+    .subject-math .launch-btn:hover { background-color: #4f46e5; box-shadow: 0 0 12px var(--math-color); }
+
+    .subject-chinese .launch-btn { background-color: var(--chinese-color); }
+    .subject-chinese .launch-btn:hover { background-color: #ea580c; box-shadow: 0 0 12px var(--chinese-color); }
+
+    .subject-english .launch-btn { background-color: var(--english-color); }
+    .subject-english .launch-btn:hover { background-color: #0284c7; box-shadow: 0 0 12px var(--english-color); }
+
+    .launch-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* 無障礙字體放大樣式 */
+    .font-lg { --font-scale: 1.25; }
+    .font-xl { --font-scale: 1.5; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow"></div>
+  <div class="bg-glow-right"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-logo">
+      <span class="logo-icon">🚀</span>
+      <div class="logo-title">
+        <h1>資源班數位學習傳送門</h1>
+        <p>自製 AI 工具與互動教材集中管理首頁</p>
+      </div>
+    </div>
+    
+    <div class="accessibility-tools">
+      <!-- 放大字型按鈕 -->
+      <button class="tool-btn" id="font-toggle-btn" onclick="toggleFontSize()">
+        <span>Aa</span> 字型大小
+      </button>
+      <!-- 深淺色切換 -->
+      <button class="tool-btn" onclick="toggleDarkMode()">
+        <span id="theme-icon">🌙</span> 主題
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 搜尋與過濾面板 -->
+    <section class="control-panel">
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="輸入關鍵字搜尋工具..." oninput="handleSearch()">
+      </div>
+      
+      <div class="filter-tags">
+        <button class="filter-tag active" data-subject="all" onclick="filterSubject('all')">全部學科</button>
+        <button class="filter-tag" data-subject="math" onclick="filterSubject('math')">數學</button>
+        <button class="filter-tag" data-subject="chinese" onclick="filterSubject('chinese')">國語文</button>
+        <button class="filter-tag" data-subject="english" onclick="filterSubject('english')">英語文</button>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         最愛看板 (Favorites Panel)
+         ========================================== -->
+    <section class="favorites-section" id="favorites-section">
+      <h2 class="section-title">
+        <span>⭐</span> 我的常用推薦 (Favorites)
+      </h2>
+      <div class="cards-grid" id="favorites-grid">
+        <!-- 釘選的卡片將在此處渲染 -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         全部資源看板
+         ========================================== -->
+    <section>
+      <h2 class="section-title" id="grid-title">全部數位教材與學習資源</h2>
+      <div class="cards-grid" id="resources-grid">
+        <!-- 卡片將由 JavaScript 動態生成 -->
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================
+       JavaScript 核心邏輯
+       ========================================== -->
+  <script>
+    // 1. 數位教材資源數據庫
+    const resourceData = [
+      {
+        id: "math_01",
+        subject: "math",
+        subjectName: "數學",
+        title: "列二元一次方程式",
+        desc: "學習如何將題目中的生活情境，轉化為二元一次聯立方程式。",
+        url: "https://spedmixteaching.pages.dev/math/G7S2-1-1-01"
+      },
+      {
+        id: "math_02",
+        subject: "math",
+        subjectName: "數學",
+        title: "二元一次方程式的圖形",
+        desc: "在直角坐標系中，繪製並理解二元一次方程式的直線圖形。",
+        url: "https://spedmixteaching.pages.dev/math/G7S2-2-2-02"
+      },
+      {
+        id: "math_03",
+        subject: "math",
+        subjectName: "數學",
+        title: "垂直 Y 軸的直線",
+        desc: "深入探討並繪製坐標平面上，特殊方程式（如 y = k）垂直於 Y 軸的水平線。",
+        url: "https://spedmixteaching.pages.dev/math/G7S2-2-2-05"
+      },
+      {
+        id: "chinese_01",
+        subject: "chinese",
+        subjectName: "國語文",
+        title: "國文句型排列挑戰",
+        desc: "互動句型重組練習，提升低識字與讀寫障礙學生的句子結構能力。",
+        url: "https://wordwall.net/play/68519/046/503"
+      },
+      {
+        id: "english_01",
+        subject: "english",
+        subjectName: "英語文",
+        title: "動詞三單變化練習",
+        desc: "英文第三人稱單數動詞變化（主詞一致性）的即時檢核與互動測驗。",
+        url: "https://spedmixteaching.pages.dev/english/G7S2-Unit1-bechanges"
+      }
+    ];
+
+    // 最愛名單 (Favorites)
+    let starredIds = [];
+    let currentSubjectFilter = "all";
+    let fontState = 0; // 0 = 正常, 1 = 放大, 2 = 特大
+
+    // 載入 localStorage 資料
+    function loadSettings() {
+      const savedStars = localStorage.getItem('portal_favorites');
+      if (savedStars) {
+        starredIds = JSON.parse(savedStars);
+      }
+      
+      const isDark = localStorage.getItem('portal_darkmode') === 'true';
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('theme-icon').innerText = "☀️";
+      }
+
+      const fontScale = localStorage.getItem('portal_fontscale');
+      if (fontScale) {
+        fontState = parseInt(fontScale);
+        applyFontSize();
+      }
+
+      renderAll();
+    }
+
+    // 渲染整個頁面
+    function renderAll() {
+      renderGrid();
+      renderFavorites();
+    }
+
+    // 渲染全部教材
+    function renderGrid(filteredData = null) {
+      const grid = document.getElementById("resources-grid");
+      grid.innerHTML = "";
+
+      let dataToRender = filteredData || resourceData;
+
+      // 如果有科目過濾
+      if (!filteredData && currentSubjectFilter !== "all") {
+        dataToRender = resourceData.filter(r => r.subject === currentSubjectFilter);
+      }
+
+      if (dataToRender.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">找不到符合搜尋的學習資源。</div>`;
+        return;
+      }
+
+      dataToRender.forEach(res => {
+        const isStarred = starredIds.includes(res.id);
+        const cardHtml = `
+          <div class="resource-card subject-${res.subject}" id="card-${res.id}">
+            <div class="card-top">
+              <span class="subject-badge">${res.subjectName}</span>
+              <button class="star-btn ${isStarred ? 'starred' : ''}" onclick="toggleStar('${res.id}')">★</button>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">${res.title}</h3>
+              <p class="card-desc">${res.desc}</p>
+            </div>
+            <a class="launch-btn" href="${res.url}" target="_blank">
+              <span>▶</span> 開啟學習單
+            </a>
+          </div>
+        `;
+        grid.innerHTML += cardHtml;
+      });
+    }
+
+    // 渲染常用推薦（最愛）
+    function renderFavorites() {
+      const favSection = document.getElementById("favorites-section");
+      const favGrid = document.getElementById("favorites-grid");
+      favGrid.innerHTML = "";
+
+      const favResources = resourceData.filter(res => starredIds.includes(res.id));
+
+      if (favResources.length === 0) {
+        favSection.classList.remove("active");
+        return;
+      }
+
+      favSection.classList.add("active");
+      favResources.forEach(res => {
+        const cardHtml = `
+          <div class="resource-card subject-${res.subject}">
+            <div class="card-top">
+              <span class="subject-badge">${res.subjectName}</span>
+              <button class="star-btn starred" onclick="toggleStar('${res.id}')">★</button>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">${res.title}</h3>
+              <p class="card-desc">${res.desc}</p>
+            </div>
+            <a class="launch-btn" href="${res.url}" target="_blank">
+              <span>▶</span> 開啟學習單
+            </a>
+          </div>
+        `;
+        favGrid.innerHTML += cardHtml;
+      });
+    }
+
+    // 點選星星收藏
+    function toggleStar(id) {
+      if (starredIds.includes(id)) {
+        starredIds = starredIds.filter(x => x !== id);
+      } else {
+        starredIds.push(id);
+      }
+      localStorage.setItem('portal_favorites', JSON.stringify(starredIds));
+      renderAll();
+    }
+
+    // 科目分類篩選
+    function filterSubject(subject) {
+      currentSubjectFilter = subject;
+      
+      // 更新標籤 active 樣式
+      document.querySelectorAll(".filter-tag").forEach(tag => {
+        tag.classList.remove("active");
+      });
+      document.querySelector(`[data-subject="${subject}"]`).classList.add("active");
+
+      // 清空搜尋框
+      document.getElementById("search-input").value = "";
+
+      const titleMap = {
+        all: "全部數位教材與學習資源",
+        math: "數學領域資源",
+        chinese: "國語文領域資源",
+        english: "英語文領域資源"
+      };
+      document.getElementById("grid-title").innerText = titleMap[subject];
+
+      renderGrid();
+    }
+
+    // 搜尋功能
+    function handleSearch() {
+      const query = document.getElementById("search-input").value.trim().toLowerCase();
+      
+      // 搜尋時，移除科目 Filter active 樣式，設回全部
+      document.querySelectorAll(".filter-tag").forEach(tag => tag.classList.remove("active"));
+      document.querySelector(`[data-subject="all"]`).classList.add("active");
+      currentSubjectFilter = "all";
+      document.getElementById("grid-title").innerText = "搜尋結果";
+
+      if (query === "") {
+        document.getElementById("grid-title").innerText = "全部數位教材與學習資源";
+        renderGrid();
+        return;
+      }
+
+      const filtered = resourceData.filter(res => {
+        return res.title.toLowerCase().includes(query) || 
+               res.desc.toLowerCase().includes(query) ||
+               res.subjectName.toLowerCase().includes(query);
+      });
+
+      renderGrid(filtered);
+    }
+
+    // 深色模式切換
+    function toggleDarkMode() {
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('portal_darkmode', isDark);
+      document.getElementById('theme-icon').innerText = isDark ? "☀️" : "🌙";
+    }
+
+    // 無障礙字型切換
+    function toggleFontSize() {
+      fontState = (fontState + 1) % 3;
+      localStorage.setItem('portal_fontscale', fontState);
+      applyFontSize();
+    }
+
+    function applyFontSize() {
+      document.body.classList.remove('font-lg', 'font-xl');
+      const btn = document.getElementById('font-toggle-btn');
+      
+      if (fontState === 1) {
+        document.body.classList.add('font-lg');
+        btn.innerHTML = "<span>Aa+</span> 中字型";
+      } else if (fontState === 2) {
+        document.body.classList.add('font-xl');
+        btn.innerHTML = "<span>Aa++</span> 大字型";
+      } else {
+        btn.innerHTML = "<span>Aa</span> 標準字型";
+      }
+    }
+
+    // 初始化
+    window.onload = function() {
+      loadSettings();
+    };
+  </script>
+</body>
+</html>

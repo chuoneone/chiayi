@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台灣教科書規格：直式注音學習單生成器</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      
+      /* 注音配色（特教友善） */
+      --char-color: #1e293b;
+      --zhuyin-color: #475569;
+      --tone-color: #ea580c; /* 醒目橘紅聲調 */
+      --guide-line-color: #fdba74; /* 橘色引導線 */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans TC', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    header {
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto 24px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 24px;
+      flex: 1;
+    }
+
+    /* 左側控制台 */
+    .control-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: fit-content;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .hint-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #f1f5f9;
+      color: #334155;
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background-color: #e2e8f0;
+    }
+
+    .examples-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .example-chip {
+      background-color: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .example-chip:hover {
+      background-color: #e2e8f0;
+    }
+
+    /* 右側學習單預覽 */
+    .preview-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-height: 500px;
+    }
+
+    .preview-header {
+      border-bottom: 2px dashed var(--border);
+      padding-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .sheet-meta {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 16px;
+    }
+
+    /* 學習單渲染排版區域 */
+    .sheet-content {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px 16px; /* 行距與字距 */
+      align-content: flex-start;
+    }
+
+    /* ==========================================
+       直式注音 CSS Flexbox 核心排版引擎
+       ========================================== */
+    .char-layout {
+      display: inline-flex;
+      align-items: center;
+      margin: 4px;
+      position: relative;
+    }
+
+    /* 國字結構 */
+    .char-box {
+      font-size: 3.5rem; /* 國字大字體 */
+      font-weight: 700;
+      color: var(--char-color);
+      line-height: 1;
+      min-width: 3.5rem;
+      text-align: center;
+    }
+
+    /* 引導分隔線 */
+    .guide-line {
+      width: 2px;
+      height: 3.2rem;
+      background-color: var(--guide-line-color);
+      margin: 0 4px;
+    }
+
+    /* 注音區塊包裝：包含聲韻母行與聲調行 */
+    .zhuyin-wrapper {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: 3.5rem;
+    }
+
+    /* 中間行：聲母與韻母垂直排列 */
+    .bopo-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-width: 1.2rem;
+    }
+
+    .bopo-char {
+      font-size: 1.2rem; /* 注音字體 */
+      font-weight: 700;
+      color: var(--zhuyin-color);
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    /* 右側行：聲調獨立放置並垂直置中 */
+    .tone-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1rem;
+      height: 100%;
+    }
+
+    .tone-char {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--tone-color);
+      line-height: 1;
+      text-align: center;
+    }
+
+    /* 標點符號樣式 */
+    .punctuation-box {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--char-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2rem;
+      height: 3.5rem;
+    }
+
+    /* 列印樣式優化 */
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+      }
+      .control-panel, header, .btn, .accessibility-tools {
+        display: none !important;
+      }
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .preview-panel {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><span>✏️</span> 國字直式注音學習單生成器</h1>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-secondary" onclick="window.print()">🖨️ 列印學習單</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- 左側控制台 -->
+    <div class="control-panel">
+      <div class="form-group">
+        <label for="text-input">請輸入生字與注音資料</label>
+        <textarea id="text-input" placeholder="格式範例：
+橘[ㄐㄩˊ]子[ㄗ˙]
+西[ㄒㄧ]瓜[ㄍㄨㄚ]"></textarea>
+        <p class="hint-text">💡 格式說明：將國字後面加上中括號 `[...]` 標記注音。例如：「國[ㄍㄨㄛˊ]字[ㄗˋ]」，非國字與標點符號會直接渲染。</p>
+      </div>
+
+      <div class="form-group">
+        <label>常用教學範例</label>
+        <div class="examples-grid">
+          <div class="example-chip" onclick="loadExample('fruit')">🍎 水果拼音</div>
+          <div class="example-chip" onclick="loadExample('animal')">🦁 動物名詞</div>
+          <div class="example-chip" onclick="loadExample('greeting')">👋 日常問候</div>
+          <div class="example-chip" onclick="loadExample('custom')">✏️ 課堂生字</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="generateSheet()">⚡ 重新生成學習單</button>
+    </div>
+
+    <!-- 右側預覽 -->
+    <div class="preview-panel">
+      <div class="preview-header">
+        <div class="sheet-title" id="preview-title">自製注音學習單</div>
+        <div class="sheet-meta">
+          <span>班級：_________</span>
+          <span>姓名：_________</span>
+        </div>
+      </div>
+      
+      <!-- 渲染輸出區 -->
+      <div class="sheet-content" id="sheet-content">
+        <!-- 由 JS 動態渲染直式注音 -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 預設範例資料
+    const examples = {
+      fruit: "橘[ㄐㄩˊ]子[ㄗ˙]\n西[ㄒㄧ]瓜[ㄍㄨㄚ]\n香[ㄒㄧㄤ]蕉[ㄐㄧㄠ]\n草[⠉ㄠˇ]莓[ㄇㄟˊ]",
+      animal: "獅[ㄕ]子[ㄗ˙]\n大[ㄉㄚˋ]象[ㄒㄧㄤˋ]\n老[ㄌㄠˇ]虎[ㄏㄨˇ]\n長[ㄔㄤˊ]頸[ㄐㄧㄥˇ]鹿[ㄌㄨˋ]",
+      greeting: "老[ㄌㄠˇ]師[ㄕ]好[ㄏㄠˇ]！\n大[ㄉㄚˋ]家[ㄐㄧㄚ]早[ㄗㄠˇ]安[ㄢ]。",
+      custom: "盪[ㄉㄤˋ]鞦[ㄑㄧㄡ]韆[ㄑㄧㄢ]\n數[ㄕㄨˋ]學[ㄒㄩㄝˊ]課[ㄎㄜˋ]\n寫[ㄒㄧㄝˇ]字[ㄗˋ]\n讀[ㄉㄨˊ]書[ㄕㄨ]"
+    };
+
+    function loadExample(key) {
+      document.getElementById('text-input').value = examples[key];
+      generateSheet();
+    }
+
+    // ==========================================
+    // 直式注音拆解與渲染 JavaScript 引擎
+    // ==========================================
+    function parseTextToTokens(rawText) {
+      const tokens = [];
+      // 使用正則表達式匹配 國字[注音] 格式
+      const regex = /([^\[\s])\[([^\]]+)\]|([^\s])/g;
+      let match;
+      
+      while ((match = regex.exec(rawText)) !== null) {
+        if (match[1] && match[2]) {
+          // 匹配到 國字 + 注音
+          tokens.push({
+            char: match[1],
+            zhuyin: match[2],
+            isPunctuation: false
+          });
+        } else if (match[3]) {
+          // 匹配到單個字元（可能是標點符號或一般文字）
+          const char = match[3];
+          const isPunct = /[\u3000-\u303F\u2000-\u206F\u0020-\u007F]/.test(char);
+          tokens.push({
+            char: char,
+            zhuyin: null,
+            isPunctuation: isPunct
+          });
+        }
+      }
+      return tokens;
+    }
+
+    // 拆解注音字串（例如 "ㄐㄩˊ" -> 聲韻母 + 聲調 + 是否輕聲）
+    function parseZhuyin(zhuyinStr) {
+      const bopoChars = [];
+      let toneChar = "";
+      let isNeutral = false;
+
+      // 判斷是否為輕聲
+      if (zhuyinStr.includes("˙")) {
+        isNeutral = true;
+      }
+
+      // 分類字元
+      for (let i = 0; i < zhuyinStr.length; i++) {
+        const char = zhuyinStr[i];
+        if (char === "˙") {
+          continue; // 輕聲標記已處理
+        }
+        if (["ˊ", "ˇ", "ˋ"].includes(char)) {
+          toneChar = char; // 聲調
+        } else {
+          bopoChars.push(char); // 聲母、韻母
+        }
+      }
+
+      return { bopoChars, toneChar, isNeutral };
+    }
+
+    function renderZhuyinElement(token) {
+      if (token.isPunctuation) {
+        return `<div class="punctuation-box">${token.char}</div>`;
+      }
+
+      if (!token.zhuyin) {
+        // 沒有注音的單個中文字
+        return `
+          <div class="char-layout">
+            <div class="char-box">${token.char}</div>
+          </div>
+        `;
+      }
+
+      // 拆解注音
+      const { bopoChars, toneChar, isNeutral } = parseZhuyin(token.zhuyin);
+
+      // 組裝聲韻母 HTML
+      let bopoColHtml = "";
+      // 如果是輕聲，輕聲點「˙」放在最上方
+      if (isNeutral) {
+        bopoColHtml += `<span class="bopo-char">˙</span>`;
+      }
+      bopoChars.forEach(char => {
+        bopoColHtml += `<span class="bopo-char">${char}</span>`;
+      });
+
+      // 組裝聲調 HTML
+      const toneHtml = toneChar ? `<span class="tone-char">${toneChar}</span>` : '';
+
+      return `
+        <div class="char-layout">
+          <!-- 國字 -->
+          <div class="char-box">${token.char}</div>
+          <!-- 橘色引導線 -->
+          <div class="guide-line"></div>
+          <!-- 注音區塊 -->
+          <div class="zhuyin-wrapper">
+            <div class="bopo-col">${bopoColHtml}</div>
+            <div class="tone-col">${toneHtml}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateSheet() {
+      const rawText = document.getElementById('text-input').value;
+      const sheetContent = document.getElementById('sheet-content');
+      sheetContent.innerHTML = "";
+
+      if (!rawText.trim()) {
+        sheetContent.innerHTML = `<div style="color: var(--text-muted); font-size: 1.2rem; padding: 20px;">請在左側輸入文字後點擊生成。</div>`;
+        return;
+      }
+
+      // 解析
+      const tokens = parseTextToTokens(rawText);
+
+      // 渲染
+      tokens.forEach(token => {
+        sheetContent.innerHTML += renderZhuyinElement(token);
+      });
+    }
+
+    // 頁面加載時預設載入範例
+    window.onload = function() {
+      loadExample('fruit');
+    };
+  </script>
+</body>
+</html>
